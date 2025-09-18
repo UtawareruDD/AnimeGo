@@ -66,16 +66,20 @@ func (m Bangumi) Parse(opts *models.AnimeParseOptions) (anime *models.AnimeEntit
 	// ------------------- 获取tmdb信息(季度信息) -------------------
 	if opts.AnimeParseOverride == nil || !opts.OverrideThemoviedb() {
 		log.Debugf("[AniSource] 解析Themoviedb，%s, %s", bgmEntity.Name, bgmEntity.AirDate)
-		id, err := m.themoviedb.SearchCache(bgmEntity.Name, nil)
+		id, err := m.themoviedb.SearchCache(bgmEntity.Name, &themoviedb.SearchFilters{BangumiID: bgmID})
 		if err != nil {
 			return nil, err
 		}
 		tmdbID = id
-		entity, err := m.themoviedb.GetCache(id, bgmEntity.AirDate)
+		entity, err := m.themoviedb.GetCache(id, &themoviedb.SeasonFilters{AirDate: bgmEntity.AirDate, BangumiID: bgmID})
 		if err != nil {
 			log.Warnf("[AniSource] 解析Themoviedb获取番剧季度信息失败")
 		} else {
-			season = entity.(*themoviedb.SeasonInfo).Season
+			info := entity.(*themoviedb.SeasonInfo)
+			season = info.Season
+			if info.ShowID != 0 && info.ShowID != tmdbID {
+				tmdbID = info.ShowID
+			}
 		}
 	} else {
 		tmdbID = opts.AnimeParseOverride.ThemoviedbID

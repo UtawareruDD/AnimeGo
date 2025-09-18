@@ -3,8 +3,9 @@ package themoviedb
 import mem "github.com/wetor/AnimeGo/pkg/memorizer"
 
 type Options struct {
-	Cache     mem.Memorizer
-	CacheTime int64
+	Cache           mem.Memorizer
+	CacheTime       int64
+	EnableBacktrace bool
 }
 
 type Entity struct {
@@ -29,6 +30,7 @@ type SeasonInfo struct {
 	EpName  string `json:"name"`
 	Ep      int    `json:"episode_number"`
 	Eps     int    `json:"episode_count"`
+	ShowID  int    `json:"-"`
 }
 
 type InfoResponse struct {
@@ -40,4 +42,13 @@ type InfoResponse struct {
 	NumberOfSeasons  int           `json:"number_of_seasons"`
 	OriginalName     string        `json:"original_name"`
 	Seasons          []*SeasonInfo `json:"seasons"`
+}
+
+type SearchFilters struct {
+	BangumiID int
+}
+
+type SeasonFilters struct {
+	AirDate   string
+	BangumiID int
 }

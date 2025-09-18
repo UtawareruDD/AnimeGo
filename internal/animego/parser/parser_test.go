@@ -80,6 +80,7 @@ func TestMain(m *testing.M) {
 	test.HookMethod(bangumiSource, "Parse", BangumiParse)
 
 	mgr = parser.NewManager(&models.ParserOptions{
+		TMDBFailBacktrace:      true,
 		TMDBFailSkip:           false,
 		TMDBFailUseTitleSeason: true,
 		TMDBFailUseFirstSeason: true,

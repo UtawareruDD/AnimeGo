@@ -520,6 +520,7 @@ func update_170_171(old, new any, version string) {
 	newConfig.Advanced.Source.Themoviedb.Redirect = oldConfig.Advanced.AniData.Themoviedb.Redirect
 	log.Println("[变动] 配置项(setting.key.themoviedb) 变更为 advanced.source.themoviedb.api_key")
 	newConfig.Advanced.Source.Themoviedb.ApiKey = oldConfig.Setting.Key.Themoviedb
+	newConfig.Advanced.Default.TMDBFailBacktrace = true
 
 	// 强制写入
 	assets.WritePlugins(assets.Dir, path.Join(newConfig.DataPath, assets.Dir), false)

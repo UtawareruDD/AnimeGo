@@ -84,6 +84,7 @@ type FilterOptions struct {
 }
 
 type ParserOptions struct {
+	TMDBFailBacktrace      bool
 	TMDBFailSkip           bool
 	TMDBFailUseTitleSeason bool
 	TMDBFailUseFirstSeason bool

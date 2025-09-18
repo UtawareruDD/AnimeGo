@@ -61,8 +61,9 @@ func TestMain(m *testing.M) {
 		BangumiCache:     bangumiCache,
 		BangumiCacheLock: &mutex,
 	}, &themoviedb.Options{
-		Cache:     b,
-		CacheTime: int64(7 * 24 * 60 * 60),
+		Cache:           b,
+		CacheTime:       int64(7 * 24 * 60 * 60),
+		EnableBacktrace: true,
 	})
 
 	bangumiHost := test.MockBangumiStart(ctx)

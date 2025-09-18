@@ -175,8 +175,9 @@ func Main() {
 		CacheTime: int64(config.Advanced.Cache.MikanCacheHour * 60 * 60),
 	}
 	tmdbOpts := &themoviedb.Options{
-		Cache:     bolt,
-		CacheTime: int64(config.Advanced.Cache.ThemoviedbCacheHour * 60 * 60),
+		Cache:           bolt,
+		CacheTime:       int64(config.Advanced.Cache.ThemoviedbCacheHour * 60 * 60),
+		EnableBacktrace: config.Default.TMDBFailBacktrace,
 	}
 	// ===============================================================================================================
 	// 初始化插件 gpython
@@ -269,6 +270,7 @@ func Main() {
 	filterSrv := wire.GetFilter(&models.FilterOptions{
 		DelaySecond: config.Advanced.Feed.DelaySecond,
 	}, downloaderSrv, &models.ParserOptions{
+		TMDBFailBacktrace:      config.Default.TMDBFailBacktrace,
 		TMDBFailSkip:           config.Default.TMDBFailSkip,
 		TMDBFailUseTitleSeason: config.Default.TMDBFailUseTitleSeason,
 		TMDBFailUseFirstSeason: config.Default.TMDBFailUseFirstSeason,

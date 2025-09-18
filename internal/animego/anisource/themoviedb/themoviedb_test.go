@@ -32,7 +32,8 @@ func TestMain(m *testing.M) {
 	db := cache.NewBolt()
 	db.Open("data/bolt.db")
 	tmdbInst = themoviedb.NewThemoviedb(&themoviedb.Options{
-		Cache: db,
+		Cache:           db,
+		EnableBacktrace: true,
 	})
 	host := test.MockThemoviedbStart(ctx)
 	request.Init(&request.Options{
@@ -74,37 +75,37 @@ func TestThemoviedb_Get_GetCache(t *testing.T) {
 			name:           "海贼王",
 			args:           args{name: "ONE PIECE", airDate: "1999-10-20"},
 			wantID:         37854,
-			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 1, AirDate: "1999-10-20", EpID: 49188, EpName: "", Ep: 0, Eps: 61},
+			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 1, AirDate: "1999-10-20", EpID: 49188, EpName: "", Ep: 0, Eps: 61, ShowID: 37854},
 		},
 		{
 			name:           "在地下城寻求邂逅是否搞错了什么 Ⅳ 新章 迷宫篇",
 			args:           args{name: "ダンジョンに出会いを求めるのは間違っているだろうか Ⅳ 新章 迷宮篇", airDate: "2022-07-21"},
 			wantID:         62745,
-			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 4, AirDate: "2022-07-23", EpID: 193725, EpName: "", Ep: 0, Eps: 22},
+			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 4, AirDate: "2022-07-23", EpID: 193725, EpName: "", Ep: 0, Eps: 22, ShowID: 62745},
 		},
 		{
 			name:           "来自深渊 烈日的黄金乡",
 			args:           args{name: "メイドインアビス 烈日の黄金郷", airDate: "2022-07-06"},
 			wantID:         72636,
-			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 2, AirDate: "2022-07-06", EpID: 204984, EpName: "", Ep: 0, Eps: 12},
+			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 2, AirDate: "2022-07-06", EpID: 204984, EpName: "", Ep: 0, Eps: 12, ShowID: 72636},
 		},
 		{
 			name:           "OVERLORD IV",
 			args:           args{name: "オーバーロードIV", airDate: "2022-07-05"},
 			wantID:         64196,
-			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 4, AirDate: "2022-07-05", EpID: 194087, EpName: "", Ep: 0, Eps: 13},
+			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 4, AirDate: "2022-07-05", EpID: 194087, EpName: "", Ep: 0, Eps: 13, ShowID: 64196},
 		},
 		{
 			name:           "福星小子",
 			args:           args{name: "うる星やつら", airDate: "2022-10-14"},
 			wantID:         154524,
-			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 1, AirDate: "2022-10-14", EpID: 237892, EpName: "", Ep: 0, Eps: 46},
+			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 1, AirDate: "2022-10-14", EpID: 237892, EpName: "", Ep: 0, Eps: 46, ShowID: 154524},
 		},
 		{
 			name:           "Mairimashita! Iruma-kun 3rd Season",
 			args:           args{name: "Mairimashita! Iruma-kun 3rd Season", airDate: "2022-11-14"},
 			wantID:         91801,
-			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 3, AirDate: "2022-10-08", EpID: 306624, EpName: "", Ep: 0, Eps: 21},
+			wantSeasonInfo: &themoviedb.SeasonInfo{Season: 3, AirDate: "2022-10-08", EpID: 306624, EpName: "", Ep: 0, Eps: 21, ShowID: 91801},
 		},
 		{
 			name:        "err_search_not_found",

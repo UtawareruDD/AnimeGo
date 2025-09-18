@@ -80,7 +80,8 @@ type Advanced struct {
 	} `yaml:"feed" json:"feed" attr:"订阅设置"`
 
 	Default struct {
-		TMDBFailSkip           bool `yaml:"tmdb_fail_skip" json:"tmdb_fail_skip" attr:"跳过当前项" comment:"tmdb解析季度失败时，跳过当前项。优先级3"`
+		TMDBFailSkip           bool `yaml:"tmdb_fail_skip" json:"tmdb_fail_skip" attr:"跳过当前项" comment:"tmdb解析季度失败时，跳过当前项。优先级4"`
+		TMDBFailBacktrace      bool `yaml:"tmdb_fail_backtrace" json:"tmdb_fail_backtrace" attr:"季度回溯匹配" comment:"tmdb解析季度失败时，季度逐个回溯匹配直到有匹配选项。优先级3"`
 		TMDBFailUseTitleSeason bool `yaml:"tmdb_fail_use_title_season" json:"tmdb_fail_use_title_season" attr:"文件名解析季度" comment:"tmdb解析季度失败时，从文件名中获取季度信息。优先级2"`
 		TMDBFailUseFirstSeason bool `yaml:"tmdb_fail_use_first_season" json:"tmdb_fail_use_first_season" attr:"使用第一季" comment:"tmdb解析季度失败时，默认使用第一季。优先级1"`
 	} `yaml:"default" json:"default" attr:"解析季度默认值" comment:"使用tmdb解析季度失败时，同类型默认值按优先级执行。数值越大，优先级越高"`
