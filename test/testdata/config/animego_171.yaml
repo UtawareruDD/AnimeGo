@@ -125,8 +125,10 @@ advanced:
         delay_second: 2
     # 解析季度默认值. 使用tmdb解析季度失败时，同类型默认值按优先级执行。数值越大，优先级越高
     default:
-        # 跳过当前项. tmdb解析季度失败时，跳过当前项。优先级3
+        # 跳过当前项. tmdb解析季度失败时，跳过当前项。优先级4
         tmdb_fail_skip: false
+        # 季度回溯匹配. tmdb解析季度失败时，季度逐个回溯匹配直到有匹配选项。优先级3
+        tmdb_fail_backtrace: true
         # 文件名解析季度. tmdb解析季度失败时，从文件名中获取季度信息。优先级2
         tmdb_fail_use_title_season: true
         # 使用第一季. tmdb解析季度失败时，默认使用第一季。优先级1
