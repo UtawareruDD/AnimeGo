@@ -128,6 +128,7 @@ func defaultAdvanced() {
 	defaultConfig.Advanced.Feed.DelaySecond = 5
 
 	defaultConfig.Advanced.Default.TMDBFailSkip = false
+	defaultConfig.Advanced.Default.TMDBFailBacktrace = false
 	defaultConfig.Advanced.Default.TMDBFailUseTitleSeason = true
 	defaultConfig.Advanced.Default.TMDBFailUseFirstSeason = true
 

@@ -39,7 +39,8 @@ func (o AnimeParseOverride) OverrideThemoviedb() bool {
 }
 
 type AnimeParseOptions struct {
-	Input any // Mikan url
+	Input             any // Mikan url
+	TMDBFailBacktrace bool
 	*AnimeParseOverride
 }
 
@@ -85,6 +86,7 @@ type FilterOptions struct {
 
 type ParserOptions struct {
 	TMDBFailSkip           bool
+	TMDBFailBacktrace      bool
 	TMDBFailUseTitleSeason bool
 	TMDBFailUseFirstSeason bool
 }

@@ -71,7 +71,11 @@ func (m Bangumi) Parse(opts *models.AnimeParseOptions) (anime *models.AnimeEntit
 			return nil, err
 		}
 		tmdbID = id
-		entity, err := m.themoviedb.GetCache(id, bgmEntity.AirDate)
+		entity, err := m.themoviedb.GetCache(id, &themoviedb.SeasonFilter{
+			AirDate:   bgmEntity.AirDate,
+			BangumiID: bgmID,
+			Backtrace: opts.TMDBFailBacktrace,
+		})
 		if err != nil {
 			log.Warnf("[AniSource] 解析Themoviedb获取番剧季度信息失败")
 		} else {

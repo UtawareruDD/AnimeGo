@@ -175,8 +175,10 @@ func Main() {
 		CacheTime: int64(config.Advanced.Cache.MikanCacheHour * 60 * 60),
 	}
 	tmdbOpts := &themoviedb.Options{
-		Cache:     bolt,
-		CacheTime: int64(config.Advanced.Cache.ThemoviedbCacheHour * 60 * 60),
+		Cache:            bolt,
+		CacheTime:        int64(config.Advanced.Cache.ThemoviedbCacheHour * 60 * 60),
+		BangumiCache:     bangumiCache,
+		BangumiCacheLock: &bangumiCacheMutex,
 	}
 	// ===============================================================================================================
 	// 初始化插件 gpython
@@ -270,6 +272,7 @@ func Main() {
 		DelaySecond: config.Advanced.Feed.DelaySecond,
 	}, downloaderSrv, &models.ParserOptions{
 		TMDBFailSkip:           config.Default.TMDBFailSkip,
+		TMDBFailBacktrace:      config.Default.TMDBFailBacktrace,
 		TMDBFailUseTitleSeason: config.Default.TMDBFailUseTitleSeason,
 		TMDBFailUseFirstSeason: config.Default.TMDBFailUseFirstSeason,
 	}, parsePlugin, mikanOpts, bgmOpts, tmdbOpts)

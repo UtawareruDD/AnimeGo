@@ -22,23 +22,24 @@ import (
 type v0wiki = []interface{}
 
 type SubjectV0 struct {
-	Date          *string               `json:"date"`
-	Platform      *string               `json:"platform"`
-	Image         SubjectImages         `json:"images"`
-	Summary       string                `json:"summary"`
-	Name          string                `json:"name"`
-	NameCN        string                `json:"name_cn"`
-	Infobox       v0wiki                `json:"infobox"`
-	Rating        Rating                `json:"rating"`
-	TotalEpisodes int64                 `json:"total_episodes"`
-	Collection    SubjectCollectionStat `json:"collection"`
-	ID            model.SubjectIDType   `json:"id"`
-	Eps           uint32                `json:"eps"`
-	Volumes       uint32                `json:"volumes"`
-	Redirect      uint32                `json:"-"`
-	Locked        bool                  `json:"locked"`
-	NSFW          bool                  `json:"nsfw"`
-	TypeID        model.SubjectType     `json:"type"`
+	Date          *string                 `json:"date"`
+	Platform      *string                 `json:"platform"`
+	Image         SubjectImages           `json:"images"`
+	Summary       string                  `json:"summary"`
+	Name          string                  `json:"name"`
+	NameCN        string                  `json:"name_cn"`
+	Infobox       v0wiki                  `json:"infobox"`
+	Rating        Rating                  `json:"rating"`
+	TotalEpisodes int64                   `json:"total_episodes"`
+	Collection    SubjectCollectionStat   `json:"collection"`
+	ID            model.SubjectIDType     `json:"id"`
+	Eps           uint32                  `json:"eps"`
+	Volumes       uint32                  `json:"volumes"`
+	Redirect      uint32                  `json:"-"`
+	Locked        bool                    `json:"locked"`
+	NSFW          bool                    `json:"nsfw"`
+	TypeID        model.SubjectType       `json:"type"`
+	Relations     []SubjectRelatedSubject `json:"relations"`
 }
 
 type Subject struct {

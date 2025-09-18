@@ -41,6 +41,7 @@ func (m *Manager) Parse(opts *models.ParseOptions) (entity *models.AnimeEntity, 
 		// ------------------- 通过bangumi获取信息（bangumi -> tmdb） -------------------
 		entity, err = m.bangumi.Parse(&models.AnimeParseOptions{
 			Input:              opts.BangumiID,
+			TMDBFailBacktrace:  m.TMDBFailBacktrace,
 			AnimeParseOverride: opts.AnimeParseOverride,
 		})
 		if err != nil {
@@ -50,6 +51,7 @@ func (m *Manager) Parse(opts *models.ParseOptions) (entity *models.AnimeEntity, 
 		// ------------------- 通过mikan获取信息（mikan -> bangumi -> tmdb） -------------------
 		entity, err = m.mikan.Parse(&models.AnimeParseOptions{
 			Input:              opts.MikanUrl,
+			TMDBFailBacktrace:  m.TMDBFailBacktrace,
 			AnimeParseOverride: opts.AnimeParseOverride,
 		})
 		if err != nil {

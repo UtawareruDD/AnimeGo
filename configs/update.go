@@ -491,21 +491,22 @@ func update_161_162(old, new any, version string) {
 }
 
 func update_162_170(old, new any, version string) {
-	oldConfig := old.(*v_162.Config)
-	newConfig := new.(*v_170.Config)
-	newConfig.Version = version
+        oldConfig := old.(*v_162.Config)
+        newConfig := new.(*v_170.Config)
+        newConfig.Version = version
 
-	log.Println("[新增] 配置项(setting.client.client)")
-	log.Println("[变动] 配置项(setting.client.qbittorrent) 变更为 setting.client")
-	newConfig.Setting.Client.Client = "QBittorrent"
-	newConfig.Setting.Client.Username = oldConfig.Setting.Client.QBittorrent.Username
-	newConfig.Setting.Client.Password = oldConfig.Setting.Client.QBittorrent.Password
-	newConfig.Setting.Client.Url = oldConfig.Setting.Client.QBittorrent.Url
-	log.Println("[变动] 配置项(advanced.download.seeding_time_minute) 变更为 advanced.client.seeding_time_minute")
-	newConfig.Advanced.Client.SeedingTimeMinute = oldConfig.Advanced.Download.SeedingTimeMinute
+        log.Println("[新增] 配置项(setting.client.client)")
+        log.Println("[变动] 配置项(setting.client.qbittorrent) 变更为 setting.client")
+        newConfig.Setting.Client.Client = "QBittorrent"
+        newConfig.Setting.Client.Username = oldConfig.Setting.Client.QBittorrent.Username
+        newConfig.Setting.Client.Password = oldConfig.Setting.Client.QBittorrent.Password
+        newConfig.Setting.Client.Url = oldConfig.Setting.Client.QBittorrent.Url
+        log.Println("[变动] 配置项(advanced.download.seeding_time_minute) 变更为 advanced.client.seeding_time_minute")
+        newConfig.Advanced.Client.SeedingTimeMinute = oldConfig.Advanced.Download.SeedingTimeMinute
+        newConfig.Advanced.Database.RefreshDatabaseCron = oldConfig.Advanced.Database.RefreshDatabaseCron
 
-	// 强制写入
-	assets.WritePlugins(assets.Dir, path.Join(newConfig.DataPath, assets.Dir), false)
+        // 强制写入
+        assets.WritePlugins(assets.Dir, path.Join(newConfig.DataPath, assets.Dir), false)
 }
 
 func update_170_171(old, new any, version string) {
