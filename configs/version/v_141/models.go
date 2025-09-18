@@ -71,6 +71,7 @@ type Advanced struct {
 
 	Default struct {
 		TMDBFailSkip           bool `yaml:"tmdb_fail_skip" json:"tmdb_fail_skip"`
+		TMDBFailBacktrace      bool `yaml:"tmdb_fail_backtrace" json:"tmdb_fail_backtrace"`
 		TMDBFailUseTitleSeason bool `yaml:"tmdb_fail_use_title_season" json:"tmdb_fail_use_title_season"`
 		TMDBFailUseFirstSeason bool `yaml:"tmdb_fail_use_first_season" json:"tmdb_fail_use_first_season"`
 	} `yaml:"default" json:"default"`

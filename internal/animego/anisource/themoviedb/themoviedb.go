@@ -1,6 +1,8 @@
 package themoviedb
 
 import (
+	"fmt"
+
 	"github.com/google/wire"
 	"github.com/pkg/errors"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/wetor/AnimeGo/pkg/log"
 	mem "github.com/wetor/AnimeGo/pkg/memorizer"
 	"github.com/wetor/AnimeGo/pkg/utils"
+	"github.com/wetor/AnimeGo/third_party/bangumi/res"
 )
 
 type Themoviedb struct {
@@ -49,7 +52,7 @@ func (a *Themoviedb) RegisterCache() {
 
 	a.cacheParseAnimeSeason = mem.Memorized(constant.ThemoviedbBucket, a.Cache.(mem.Memorizer),
 		func(params *mem.Params, results *mem.Results) error {
-			seasonInfo, err := a.parseAnimeSeason(params.Get("tmdbID").(int), params.Get("airDate").(string))
+			seasonInfo, err := a.parseAnimeSeason(params.Get("tmdbID").(int), seasonFilterFromParams(params))
 			if err != nil {
 				return err
 			}
@@ -81,8 +84,8 @@ func (a *Themoviedb) SearchCache(name string, filters any) (int, error) {
 }
 
 func (a *Themoviedb) Get(id int, filters any) (any, error) {
-	airDate := filters.(string)
-	seasonInfo, err := a.parseAnimeSeason(id, airDate)
+	seasonFilter := normalizeSeasonFilter(filters)
+	seasonInfo, err := a.parseAnimeSeason(id, seasonFilter)
 	if err != nil {
 		return nil, errors.Wrap(err, "获取Themoviedb信息失败")
 	}
@@ -93,9 +96,14 @@ func (a *Themoviedb) GetCache(id int, filters any) (any, error) {
 	if !a.cacheInit {
 		a.RegisterCache()
 	}
-	airDate := filters.(string)
+	seasonFilter := normalizeSeasonFilter(filters)
 	results := mem.NewResults("seasonInfo", &SeasonInfo{})
-	err := a.cacheParseAnimeSeason(mem.NewParams("tmdbID", id, "airDate", airDate).
+	err := a.cacheParseAnimeSeason(mem.NewParams(
+		"tmdbID", id,
+		"airDate", seasonFilter.AirDate,
+		"bangumiID", seasonFilter.BangumiID,
+		"backtrace", seasonFilter.Backtrace,
+	).
 		TTL(a.CacheTime), results)
 	if err != nil {
 		return nil, errors.Wrap(err, "获取Themoviedb信息失败")
@@ -154,7 +162,7 @@ func (a *Themoviedb) parseThemoviedbID(name string) (entity *Entity, err error) 
 	return result.(*Entity), nil
 }
 
-func (a *Themoviedb) parseAnimeSeason(tmdbID int, airDate string) (seasonInfo *SeasonInfo, err error) {
+func (a *Themoviedb) parseAnimeSeason(tmdbID int, filter *SeasonFilter) (seasonInfo *SeasonInfo, err error) {
 	resp := InfoResponse{}
 	err = request.Get(infoApi(tmdbID, false), &resp)
 	if err != nil {
@@ -166,25 +174,219 @@ func (a *Themoviedb) parseAnimeSeason(tmdbID int, airDate string) (seasonInfo *S
 		log.DebugErr(err)
 		return nil, err
 	}
-	seasonInfo = resp.Seasons[0]
+	seasonInfo, min := matchSeasonByAirDate(resp.Seasons, filter.AirDate)
+	if min <= constant.ThemoviedbMatchSeasonDays {
+		seasonInfo.EpName = ""
+		return seasonInfo, nil
+	}
+
+	if filter == nil || !filter.Backtrace || filter.BangumiID <= 0 {
+		err = errors.WithStack(&exceptions.ErrThemoviedbMatchSeason{Message: "此番剧可能未开播"})
+		log.DebugErr(err)
+		return nil, err
+	}
+
+	subjectCache := make(map[int]*bangumiSubject)
+	queue := make([]int, 0, 4)
+	visited := make(map[int]struct{})
+	enqueue := func(id int) {
+		if _, ok := visited[id]; ok {
+			return
+		}
+		visited[id] = struct{}{}
+		queue = append(queue, id)
+	}
+	enqueue(filter.BangumiID)
+
+	for len(queue) > 0 {
+		currentID := queue[0]
+		queue = queue[1:]
+
+		subject, err := a.fetchBangumiSubjectCached(subjectCache, currentID)
+		if err != nil {
+			log.DebugErr(err)
+			continue
+		}
+		if subject == nil {
+			continue
+		}
+
+		if currentID != filter.BangumiID && len(subject.AirDate) > 0 {
+			if season, diff := matchSeasonByAirDate(resp.Seasons, subject.AirDate); season != nil && diff <= constant.ThemoviedbMatchSeasonDays {
+				seasonInfo = season
+				min = diff
+				break
+			}
+		}
+
+		for _, prequelID := range subject.Prequels {
+			enqueue(prequelID)
+		}
+	}
+
+	if min > constant.ThemoviedbMatchSeasonDays || seasonInfo == nil {
+		err = errors.WithStack(&exceptions.ErrThemoviedbMatchSeason{Message: "此番剧可能未开播"})
+		log.DebugErr(err)
+		return nil, err
+	}
+
+	seasonInfo.EpName = ""
+	return seasonInfo, nil
+}
+
+func normalizeSeasonFilter(filters any) *SeasonFilter {
+	switch v := filters.(type) {
+	case nil:
+		return &SeasonFilter{}
+	case string:
+		return &SeasonFilter{AirDate: v}
+	case SeasonFilter:
+		return &SeasonFilter{AirDate: v.AirDate, BangumiID: v.BangumiID, Backtrace: v.Backtrace}
+	case *SeasonFilter:
+		if v == nil {
+			return &SeasonFilter{}
+		}
+		filter := *v
+		return &filter
+	default:
+		return &SeasonFilter{}
+	}
+}
+
+func seasonFilterFromParams(params *mem.Params) *SeasonFilter {
+	filter := &SeasonFilter{}
+	if v := params.Get("airDate"); v != nil {
+		if airDate, ok := v.(string); ok {
+			filter.AirDate = airDate
+		}
+	}
+	if v := params.Get("bangumiID"); v != nil {
+		if bangumiID, ok := v.(int); ok {
+			filter.BangumiID = bangumiID
+		}
+	}
+	if v := params.Get("backtrace"); v != nil {
+		if backtrace, ok := v.(bool); ok {
+			filter.Backtrace = backtrace
+		}
+	}
+	return filter
+}
+
+func matchSeasonByAirDate(seasons []*SeasonInfo, airDate string) (*SeasonInfo, int) {
+	if len(seasons) == 0 {
+		return nil, 36500
+	}
+	if len(airDate) == 0 {
+		for _, season := range seasons {
+			if season.Season == 0 || season.EpName == "Specials" {
+				continue
+			}
+			return season, 0
+		}
+		return seasons[0], 0
+	}
 	min := 36500
-	for _, r := range resp.Seasons {
+	seasonInfo := seasons[0]
+	for _, r := range seasons {
 		if r.Season == 0 || r.EpName == "Specials" {
 			continue
 		}
-		// TODO: 待优化，通过比较此季度番剧的初放送日期，筛选差值最小的季
 		if s := StrTimeSubAbs(r.AirDate, airDate); s < min {
 			min = s
 			seasonInfo = r
 		}
 	}
-	if min > constant.ThemoviedbMatchSeasonDays {
-		err = errors.WithStack(&exceptions.ErrThemoviedbMatchSeason{Message: "此番剧可能未开播"})
-		log.DebugErr(err)
+	if seasonInfo == nil {
+		return nil, min
+	}
+	return seasonInfo, min
+}
+
+func (a *Themoviedb) fetchBangumiSubjectCached(cache map[int]*bangumiSubject, id int) (*bangumiSubject, error) {
+	if subject, ok := cache[id]; ok {
+		return subject, nil
+	}
+	subject, err := a.getBangumiSubject(id)
+	if err != nil {
 		return nil, err
 	}
-	seasonInfo.EpName = ""
-	return seasonInfo, nil
+	cache[id] = subject
+	return subject, nil
+}
+
+func (a *Themoviedb) getBangumiSubject(id int) (*bangumiSubject, error) {
+	if subject, err := a.loadBangumiSubject(id); err == nil && subject != nil {
+		return subject, nil
+	}
+	return a.fetchBangumiSubject(id)
+}
+
+func (a *Themoviedb) loadBangumiSubject(id int) (*bangumiSubject, error) {
+	if a.BangumiCache == nil {
+		return nil, errors.WithStack(&exceptions.ErrBangumiCacheNotFound{BangumiID: id})
+	}
+	entity := &bangumiCacheSubject{}
+	if a.BangumiCacheLock != nil {
+		a.BangumiCacheLock.Lock()
+		defer a.BangumiCacheLock.Unlock()
+	}
+	err := a.BangumiCache.Get(constant.BangumiSubjectBucket, id, entity)
+	if err != nil {
+		return nil, err
+	}
+	return entity.toSubject(), nil
+}
+
+func (a *Themoviedb) fetchBangumiSubject(id int) (*bangumiSubject, error) {
+	resp := res.SubjectV0{}
+	err := request.Get(fmt.Sprintf("%s/v0/subjects/%d", constant.BangumiHost, id), &resp)
+	if err != nil {
+		return nil, errors.WithStack(&exceptions.ErrRequest{Name: "Bangumi"})
+	}
+	subject := &bangumiSubject{ID: int(resp.ID)}
+	if resp.Date != nil {
+		subject.AirDate = *resp.Date
+	}
+	for _, relation := range resp.Relations {
+		if relation.Relation == "前传" {
+			subject.Prequels = append(subject.Prequels, int(relation.SubjectID))
+		}
+	}
+	return subject, nil
+}
+
+type bangumiSubject struct {
+	ID       int
+	AirDate  string
+	Prequels []int
+}
+
+type bangumiCacheSubject struct {
+	ID        int                    `json:"id"`
+	AirDate   string                 `json:"airdate"`
+	Relations []bangumiCacheRelation `json:"relations"`
+}
+
+type bangumiCacheRelation struct {
+	ID       int    `json:"id"`
+	Relation string `json:"relation"`
+}
+
+func (s *bangumiCacheSubject) toSubject() *bangumiSubject {
+	if s == nil {
+		return nil
+	}
+	subject := &bangumiSubject{
+		ID:      s.ID,
+		AirDate: s.AirDate,
+	}
+	for _, relation := range s.Relations {
+		if relation.Relation == "前传" && relation.ID != 0 {
+			subject.Prequels = append(subject.Prequels, relation.ID)
+		}
+	}
+	return subject
 }
 
 // Check interface is satisfied

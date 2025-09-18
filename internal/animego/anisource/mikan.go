@@ -58,6 +58,7 @@ func (m Mikan) Parse(opts *models.AnimeParseOptions) (anime *models.AnimeEntity,
 			MikanID:   mikanEntity.MikanID,
 			BangumiID: mikanEntity.BangumiID,
 		},
+		TMDBFailBacktrace:  opts.TMDBFailBacktrace,
 		AnimeParseOverride: opts.AnimeParseOverride,
 	})
 }

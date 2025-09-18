@@ -81,6 +81,7 @@ func TestMain(m *testing.M) {
 
 	mgr = parser.NewManager(&models.ParserOptions{
 		TMDBFailSkip:           false,
+		TMDBFailBacktrace:      false,
 		TMDBFailUseTitleSeason: true,
 		TMDBFailUseFirstSeason: true,
 	}, p, mikanSource, bangumiSource)

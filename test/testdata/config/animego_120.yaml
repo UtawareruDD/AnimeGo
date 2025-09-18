@@ -53,6 +53,7 @@ advanced:
             goroutine_max: 4
     default:
         tmdb_fail_skip: false
+        tmdb_fail_backtrace: false
         tmdb_fail_use_title_season: true
         tmdb_fail_use_first_season: true
     client:

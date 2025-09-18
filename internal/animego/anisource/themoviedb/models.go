@@ -1,10 +1,17 @@
 package themoviedb
 
-import mem "github.com/wetor/AnimeGo/pkg/memorizer"
+import (
+	"sync"
+
+	"github.com/wetor/AnimeGo/internal/api"
+	mem "github.com/wetor/AnimeGo/pkg/memorizer"
+)
 
 type Options struct {
-	Cache     mem.Memorizer
-	CacheTime int64
+	Cache            mem.Memorizer
+	CacheTime        int64
+	BangumiCache     api.CacheGetter
+	BangumiCacheLock *sync.Mutex
 }
 
 type Entity struct {
@@ -40,4 +47,10 @@ type InfoResponse struct {
 	NumberOfSeasons  int           `json:"number_of_seasons"`
 	OriginalName     string        `json:"original_name"`
 	Seasons          []*SeasonInfo `json:"seasons"`
+}
+
+type SeasonFilter struct {
+	AirDate   string
+	BangumiID int
+	Backtrace bool
 }
